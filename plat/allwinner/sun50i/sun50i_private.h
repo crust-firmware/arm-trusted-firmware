@@ -9,5 +9,7 @@
 
 void sun50i_configure_mmu_el1(int flags);
 void sun50i_configure_mmu_el3(int flags);
+void sun50i_cpu_off(unsigned int cluster, unsigned int core);
+void sun50i_cpu_on(unsigned int cluster, unsigned int core);
 
 #endif /* __SUN50I_PRIVATE_H__ */

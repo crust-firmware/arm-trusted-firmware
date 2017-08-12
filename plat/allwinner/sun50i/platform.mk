@@ -31,6 +31,7 @@ BL31_SOURCES		+=	drivers/arm/gic/common/gic_common.c		\
 				plat/common/plat_gicv2.c			\
 				plat/common/plat_psci_common.c			\
 				plat/allwinner/${PLAT}/${PLAT}_bl31_setup.c	\
+				plat/allwinner/${PLAT}/${PLAT}_cpu_ops.c	\
 				plat/allwinner/${PLAT}/${PLAT}_pm.c		\
 				plat/allwinner/${PLAT}/${PLAT}_topology.c
 
