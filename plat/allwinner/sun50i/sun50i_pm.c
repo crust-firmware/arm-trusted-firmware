@@ -73,12 +73,42 @@ static int sun50i_validate_ns_entrypoint(uintptr_t ns_entrypoint)
 	return PSCI_E_INVALID_ADDRESS;
 }
 
+static int sun50i_get_node_hw_state(u_register_t mpidr,
+				    unsigned int power_level)
+{
+	unsigned int cluster = MPIDR_AFFLVL1_VAL(mpidr);
+	unsigned int core = MPIDR_AFFLVL0_VAL(mpidr);
+	uint32_t status;
+
+	if (!mpidr_is_valid(mpidr))
+		return PSCI_E_INVALID_PARAMS;
+	if (power_level > PLAT_MAX_PWR_LVL)
+		return PSCI_E_NOT_SUPPORTED;
+
+	status = mmio_read_32(SUN50I_CPUCFG_CPU_STS_REG(cluster));
+	switch (power_level) {
+		case 0:
+			if (!(status & BIT(24 + core)))
+				return HW_OFF;
+			if (status & BIT(8 + core))
+				return HW_STANDBY;
+			break;
+		case 1:
+			if (status & BIT(0))
+				return HW_STANDBY;
+			break;
+	}
+
+	return HW_ON;
+}
+
 static plat_psci_ops_t sun50i_psci_ops = {
 	.pwr_domain_on			= sun50i_pwr_domain_on,
 	.pwr_domain_on_finish		= sun50i_pwr_domain_on_finish,
 	.system_off			= sun50i_system_off,
 	.system_reset			= sun50i_system_reset,
 	.validate_ns_entrypoint		= sun50i_validate_ns_entrypoint,
+	.get_node_hw_state		= sun50i_get_node_hw_state,
 };
 
 int plat_setup_psci_ops(uintptr_t sec_entrypoint,
