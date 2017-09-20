@@ -164,7 +164,8 @@ ASFLAGS			+=	$(CPPFLAGS) $(ASFLAGS_$(ARCH))			\
 				-Wa,--fatal-warnings
 TF_CFLAGS		+=	$(CPPFLAGS) $(TF_CFLAGS_$(ARCH))		\
 				-ffreestanding -fno-builtin -Wall -std=gnu99	\
-				-Os -ffunction-sections -fdata-sections
+				-Os -ffunction-sections -fdata-sections		\
+				-fno-common
 
 GCC_V_OUTPUT		:=	$(shell $(CC) -v 2>&1)
 PIE_FOUND		:=	$(findstring --enable-default-pie,${GCC_V_OUTPUT})
