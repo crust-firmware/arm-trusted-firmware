@@ -59,6 +59,8 @@ void bl31_platform_setup(void)
 	gicv2_pcpu_distif_init();
 	gicv2_cpuif_enable();
 
+	sunxi_security_setup();
+
 	if (mmio_read_32(0x40100)) {
 		NOTICE("ARISC firmware found, deasserting reset\n");
 		mmio_setbits_32(SUN50I_R_CPUCFG_BASE, BIT(0));

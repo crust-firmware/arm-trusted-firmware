@@ -33,6 +33,7 @@ BL31_SOURCES		+=	drivers/arm/gic/common/gic_common.c		\
 				plat/allwinner/${PLAT}/${PLAT}_bl31_setup.c	\
 				plat/allwinner/${PLAT}/${PLAT}_cpu_ops.c	\
 				plat/allwinner/${PLAT}/${PLAT}_pm.c		\
+				plat/allwinner/${PLAT}/${PLAT}_security.c	\
 				plat/allwinner/${PLAT}/${PLAT}_topology.c
 
 # Enable memory map optimisation.
