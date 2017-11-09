@@ -168,8 +168,9 @@ void gicv2_driver_init(const gicv2_driver_data_t *plat_driver_data)
 				plat_driver_data->g0_interrupt_num == 0);
 	}
 #else
-	assert(plat_driver_data->interrupt_props != NULL);
-	assert(plat_driver_data->interrupt_props_num > 0);
+	assert(plat_driver_data->interrupt_props_num == 0 ?
+			plat_driver_data->interrupt_props == NULL :
+			plat_driver_data->interrupt_props != NULL);
 #endif
 
 	/* Ensure that this is a GICv2 system */
