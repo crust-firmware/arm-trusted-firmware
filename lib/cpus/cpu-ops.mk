@@ -166,10 +166,10 @@ $(eval $(call add_define,ERRATA_A72_859971))
 
 # Errata build flags
 ifneq (${ERRATA_A53_843419},0)
-TF_LDFLAGS_aarch64	+= --fix-cortex-a53-843419
+TF_LDFLAGS_aarch64	+= -Wl,--fix-cortex-a53-843419
 endif
 
 ifneq (${ERRATA_A53_835769},0)
 TF_CFLAGS_aarch64	+= -mfix-cortex-a53-835769
-TF_LDFLAGS_aarch64	+= --fix-cortex-a53-835769
+TF_LDFLAGS_aarch64	+= -Wl,--fix-cortex-a53-835769
 endif
