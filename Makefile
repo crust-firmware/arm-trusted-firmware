@@ -175,6 +175,7 @@ TF_CFLAGS		+=	-fno-PIE
 endif
 
 TF_LDFLAGS		+=	-flto -nostdlib
+TF_LDFLAGS		+=	-Wl,--build-id=none
 TF_LDFLAGS		+=	-Wl,--fatal-warnings -Wl,-O1
 TF_LDFLAGS		+=	-Wl,--gc-sections
 TF_LDFLAGS		+=	$(TF_LDFLAGS_$(ARCH))
