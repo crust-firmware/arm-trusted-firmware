@@ -270,5 +270,11 @@ SECTIONS
         __COHERENT_RAM_END_UNALIGNED__ - __COHERENT_RAM_START__;
 #endif
 
+    /DISCARD/ : {
+        *(.comment*)
+        *(.iplt*)
+        *(.note*)
+    }
+
     ASSERT(. <= BL31_LIMIT, "BL31 image has exceeded its limit.")
 }
