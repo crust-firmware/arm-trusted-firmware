@@ -14,6 +14,11 @@ ENTRY(bl31_entrypoint)
 
 MEMORY {
     RAM (rwx): ORIGIN = BL31_BASE, LENGTH = BL31_LIMIT - BL31_BASE
+#ifdef BL31_DYN_BASE
+    DYN (rwx): ORIGIN = BL31_DYN_BASE, LENGTH = BL31_DYN_LIMIT - BL31_DYN_BASE
+#else
+#define DYN RAM
+#endif
 }
 
 #ifdef PLAT_EXTRA_LD_SCRIPT
@@ -157,11 +162,19 @@ SECTIONS
     ASSERT(. <= BL31_PROGBITS_LIMIT, "BL31 progbits has exceeded its limit.")
 #endif
 
+#ifdef BL31_DYN_BASE
+    ASSERT(. <= BL31_LIMIT, "BL31 image has exceeded its limit.")
+
+    . = BL31_DYN_BASE;
+    ASSERT(. == ALIGN(PAGE_SIZE),
+           "BL31_DYN_BASE address is not aligned on a page boundary.")
+#endif
+
     stacks (NOLOAD) : {
         __STACKS_START__ = .;
         *(tzfw_normal_stacks)
         __STACKS_END__ = .;
-    } >RAM
+    } >DYN
 
     /*
      * The .bss section gets initialised to 0 at runtime.
@@ -212,7 +225,7 @@ SECTIONS
         __PMF_TIMESTAMP_END__ = .;
 #endif /* ENABLE_PMF */
         __BSS_END__ = .;
-    } >RAM
+    } >DYN
 
     /*
      * The xlat_table section is for full, aligned page tables (4K).
@@ -228,7 +241,7 @@ SECTIONS
         __SP_IMAGE_XLAT_TABLES_END__ = .;
 #endif
         *(xlat_table)
-    } >RAM
+    } >DYN
 
 #if USE_COHERENT_MEM
     /*
@@ -254,7 +267,7 @@ SECTIONS
          */
         . = NEXT(PAGE_SIZE);
         __COHERENT_RAM_END__ = .;
-    } >RAM
+    } >DYN
 #endif
 
     /*
@@ -276,5 +289,9 @@ SECTIONS
         *(.note*)
     }
 
+#ifdef BL31_DYN_BASE
+    ASSERT(. <= BL31_DYN_LIMIT, "BL31 dynamic memory has exceeded its limit.")
+#else
     ASSERT(. <= BL31_LIMIT, "BL31 image has exceeded its limit.")
+#endif
 }
