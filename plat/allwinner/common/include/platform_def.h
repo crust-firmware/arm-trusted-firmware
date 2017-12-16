@@ -14,7 +14,10 @@
 #include <sunxi_mmap.h>
 
 #define BL31_BASE			(SUNXI_SRAM_A2_BASE + 0x00004000)
-#define BL31_LIMIT			(SUNXI_SRAM_A2_BASE + 0x00010000)
+#define BL31_LIMIT			(SUNXI_SRAM_A2_BASE + 0x0000c000)
+
+#define BL31_DYN_BASE			SUNXI_SRAM_A1_BASE
+#define BL31_DYN_LIMIT			(SUNXI_SRAM_A1_BASE + SUNXI_SRAM_A1_SIZE)
 
 /* The traditional U-Boot load address is 160MB into DRAM, so at 0x4a000000 */
 #define PLAT_SUNXI_NS_IMAGE_OFFSET	(SUNXI_DRAM_BASE + (160U << 20))

@@ -46,7 +46,7 @@
  */
 #define SCP_FIRMWARE_MAGIC		0xb4400012
 
-static uint32_t scp_firmware_entry = SUNXI_SRAM_A2_BASE + 0x00010000;
+static uint32_t scp_firmware_entry = SUNXI_SRAM_A2_BASE + 0x0000c000;
 
 static void sunxi_cpu_standby(plat_local_state_t cpu_state)
 {
