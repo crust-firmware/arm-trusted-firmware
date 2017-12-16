@@ -8,6 +8,7 @@
 #include <debug.h>
 #include <generic_delay_timer.h>
 #include <gicv2.h>
+#include <mmio.h>
 #include <platform.h>
 #include <platform_def.h>
 #include <sun50i_def.h>
@@ -57,6 +58,13 @@ void bl31_platform_setup(void)
 	gicv2_distif_init();
 	gicv2_pcpu_distif_init();
 	gicv2_cpuif_enable();
+
+	if (mmio_read_32(0x40100)) {
+		NOTICE("ARISC firmware found, deasserting reset\n");
+		mmio_setbits_32(SUN50I_R_CPUCFG_BASE, BIT(0));
+	} else {
+		WARN("ARISC firmware not found\n");
+	}
 
 	INFO("BL31: Platform setup done\n");
 }
