@@ -156,9 +156,6 @@ void gicv2_driver_init(const gicv2_driver_data_t *plat_driver_data)
 		/* Interrupt properties array size must be 0 */
 		assert(plat_driver_data->interrupt_props_num == 0);
 
-		/* The platform should provide a list of secure interrupts */
-		assert(plat_driver_data->g0_interrupt_array);
-
 		/*
 		 * If there are no interrupts of a particular type, then the
 		 * number of interrupts of that type should be 0 and vice-versa.
