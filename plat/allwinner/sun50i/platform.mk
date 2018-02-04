@@ -6,7 +6,8 @@
 
 include lib/xlat_tables_v2/xlat_tables.mk
 
-PLAT_INCLUDES		:=	-Iplat/allwinner/${PLAT}/${ARCH}/include	\
+PLAT_INCLUDES		:=	-Iinclude/drivers/ti/uart			\
+				-Iplat/allwinner/${PLAT}/${ARCH}/include	\
 				-Iplat/allwinner/${PLAT}/include
 
 PLAT_BL_COMMON_SOURCES	:=	drivers/console/${ARCH}/console.S		\

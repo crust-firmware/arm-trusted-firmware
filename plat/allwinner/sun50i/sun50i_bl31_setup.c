@@ -5,7 +5,6 @@
  */
 
 #include <assert.h>
-#include <console.h>
 #include <debug.h>
 #include <generic_delay_timer.h>
 #include <gicv2.h>
@@ -13,11 +12,14 @@
 #include <platform_def.h>
 #include <sun50i_def.h>
 #include <sun50i_mmap.h>
+#include <uart_16550.h>
 
 #include "sun50i_private.h"
 
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
+
+static console_16550_t console;
 
 static const gicv2_driver_data_t sun50i_gic_data = {
 	.gicd_base = SUN50I_GICD_BASE,
@@ -27,12 +29,9 @@ static const gicv2_driver_data_t sun50i_gic_data = {
 void bl31_early_platform_setup(bl31_params_t *from_bl2,
 			       void *plat_params_from_bl2)
 {
-#if LOG_LEVEL > LOG_LEVEL_NONE
 	/* Initialize the debug console as soon as possible */
-	console_init(SUN50I_UART0_BASE,
-		     SUN50I_UART0_CLK_IN_HZ,
-		     SUN50I_UART0_BAUDRATE);
-#endif
+	console_16550_register(SUN50I_UART0_BASE, SUN50I_UART0_CLK_IN_HZ,
+			       SUN50I_UART0_BAUDRATE, &console);
 
 	/* Validate parameters passed from BL2 */
 	assert(from_bl2->h.type == PARAM_BL31);
