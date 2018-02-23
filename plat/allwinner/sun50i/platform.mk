@@ -7,6 +7,7 @@
 include lib/xlat_tables_v2/xlat_tables.mk
 
 PLAT_INCLUDES		:=	-Iinclude/drivers/ti/uart			\
+				-Iplat/arm/css/drivers/scpi			\
 				-Iplat/allwinner/${PLAT}/${ARCH}/include	\
 				-Iplat/allwinner/${PLAT}/include
 
@@ -28,13 +29,15 @@ BL31_SOURCES		+=	drivers/arm/gic/common/gic_common.c		\
 				drivers/delay_timer/delay_timer.c		\
 				drivers/delay_timer/generic_delay_timer.c	\
 				lib/cpus/${ARCH}/cortex_a53.S			\
+				plat/arm/css/drivers/scpi/css_scpi.c		\
 				plat/common/plat_gicv2.c			\
 				plat/common/plat_psci_common.c			\
 				plat/allwinner/${PLAT}/${PLAT}_bl31_setup.c	\
 				plat/allwinner/${PLAT}/${PLAT}_cpu_ops.c	\
 				plat/allwinner/${PLAT}/${PLAT}_pm.c		\
 				plat/allwinner/${PLAT}/${PLAT}_security.c	\
-				plat/allwinner/${PLAT}/${PLAT}_topology.c
+				plat/allwinner/${PLAT}/${PLAT}_topology.c	\
+				plat/allwinner/${PLAT}/drivers/css_mhu.c
 
 # Enable memory map optimisation.
 ARM_BOARD_OPTIMISE_MEM		:=	1

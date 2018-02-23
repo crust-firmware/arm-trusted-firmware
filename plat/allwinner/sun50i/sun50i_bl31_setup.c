@@ -5,6 +5,7 @@
  */
 
 #include <assert.h>
+#include <css_scpi.h>
 #include <debug.h>
 #include <generic_delay_timer.h>
 #include <gicv2.h>
@@ -61,11 +62,15 @@ void bl31_platform_setup(void)
 
 	sunxi_security_setup();
 
-	if (mmio_read_32(0x40100)) {
-		NOTICE("ARISC firmware found, deasserting reset\n");
-		mmio_setbits_32(SUN50I_R_CPUCFG_BASE, BIT(0));
-	} else {
+	if (!mmio_read_32(0x40100)) {
 		WARN("ARISC firmware not found\n");
+		return;
+	}
+
+	mmio_setbits_32(SUN50I_R_CPUCFG_BASE, BIT(0));
+	if (scpi_wait_ready()) {
+		ERROR("SCP firmware is not responding\n");
+		return;
 	}
 
 	INFO("BL31: Platform setup done\n");
