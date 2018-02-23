@@ -7,6 +7,7 @@
 #ifndef __PLATFORM_DEF_H__
 #define __PLATFORM_DEF_H__
 
+#include <arch.h>
 #include <common_def.h>
 #include <sun50i_mmap.h>
 #include <tbbr/tbbr_img_def.h>
@@ -25,11 +26,11 @@
 
 #define PLAT_CSS_SCP_COM_SHARED_MEM_BASE (SUN50I_SRAM_A2_BASE + 0x7e00)
 
-#define PLAT_MAX_PWR_LVL_STATES		2
+#define PLAT_MAX_PWR_LVL_STATES		3
 #define PLAT_MAX_RET_STATE		1
-#define PLAT_MAX_OFF_STATE		2
+#define PLAT_MAX_OFF_STATE		3
 
-#define PLAT_MAX_PWR_LVL		2
+#define PLAT_MAX_PWR_LVL		MPIDR_AFFLVL2
 #define PLAT_NUM_PWR_DOMAINS		(1 + \
 					 PLATFORM_CLUSTER_COUNT + \
 					 PLATFORM_CORE_COUNT)
