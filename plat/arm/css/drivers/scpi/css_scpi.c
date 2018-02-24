@@ -46,6 +46,7 @@ static void scpi_secure_message_send(size_t payload_size)
 	 * the CPU then SCP would read stale payload data
 	 */
 	dmbst();
+	flush_dcache_range(SCPI_SHARED_MEM_AP_TO_SCP, 0x100);
 
 	mhu_secure_message_send(SCPI_MHU_SLOT_ID);
 }
