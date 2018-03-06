@@ -14,7 +14,6 @@
 #include <platform.h>
 #include <platform_def.h>
 #include <psci.h>
-#include <sun50i_cpucfg.h>
 #include <sun50i_def.h>
 
 #include "sun50i_private.h"
@@ -30,9 +29,15 @@
 #define SYSTEM_PWR_STATE(state) \
 	((state)->pwr_domain_state[SYSTEM_PWR_LVL])
 
-#define mpidr_is_valid(mpidr) (plat_core_pos_by_mpidr(mpidr) >= 0)
+/* c = cluster, n = core */
+#define SUN50I_CPUCFG_CLUSTER_CTRL0_REG(c) \
+	(SUN50I_CPUCFG_BASE + 0x0000 + 0x10 * (c))
+#define SUN50I_CPUCFG_RVBAR_LO_REG(c, n) \
+	(SUN50I_CPUCFG_BASE + 0x00a0 + 0x20 * (c) + 0x08 * (n))
+#define SUN50I_CPUCFG_RVBAR_HI_REG(c, n) \
+	(SUN50I_CPUCFG_BASE + 0x00a4 + 0x20 * (c) + 0x08 * (n))
 
-uintptr_t warm_entrypoint;
+#define mpidr_is_valid(mpidr) (plat_core_pos_by_mpidr(mpidr) >= 0)
 
 static void sun50i_cpu_standby(plat_local_state_t cpu_state)
 {
@@ -46,10 +51,6 @@ static int sun50i_pwr_domain_on(u_register_t mpidr)
 	if (!mpidr_is_valid(mpidr))
 		return PSCI_E_INTERN_FAIL;
 
-	mmio_write_32(SUN50I_CPUCFG_RVBAR_LO_REG(MPIDR_AFFLVL0_VAL(mpidr)),
-		      warm_entrypoint & 0xffffffff);
-	mmio_write_32(SUN50I_CPUCFG_RVBAR_HI_REG(MPIDR_AFFLVL0_VAL(mpidr)),
-		      warm_entrypoint >> 32);
 	scpi_set_css_power_state(mpidr, scpi_power_on, scpi_power_on,
 	                         scpi_power_on);
 
@@ -217,7 +218,15 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 {
 	assert(psci_ops);
 
-	warm_entrypoint = sec_entrypoint;
+	/* Program all CPU entry points. */
+	for (int i = 0; i < PLATFORM_CLUSTER_COUNT; ++i) {
+		for (int j = 0; j < PLATFORM_MAX_CPUS_PER_CLUSTER; ++j) {
+			mmio_write_32(SUN50I_CPUCFG_RVBAR_HI_REG(i, j),
+				      (uint32_t)(sec_entrypoint >> 32));
+			mmio_write_32(SUN50I_CPUCFG_RVBAR_LO_REG(i, j),
+				      (uint32_t)sec_entrypoint);
+		}
+	}
 	*psci_ops = &sun50i_psci_ops;
 
 	return 0;
