@@ -14,7 +14,7 @@
 #include <sunxi_mmap.h>
 
 #define BL31_BASE			(SUNXI_SRAM_A2_BASE + 0x00004000)
-#define BL31_LIMIT			(SUNXI_SRAM_A2_BASE + SUNXI_SRAM_A2_SIZE)
+#define BL31_LIMIT			(SUNXI_SRAM_A2_BASE + 0x00010000)
 
 /* The traditional U-Boot load address is 160MB into DRAM, so at 0x4a000000 */
 #define PLAT_SUNXI_NS_IMAGE_OFFSET	(SUNXI_DRAM_BASE + (160U << 20))
@@ -31,9 +31,12 @@
 #define MAX_MMAP_REGIONS		(3 + PLATFORM_MMAP_REGIONS)
 #define MAX_XLAT_TABLES			1
 
-#define PLAT_MAX_PWR_LVL_STATES		U(2)
+#define PLAT_CSS_SCP_COM_SHARED_MEM_BASE \
+	(SUNXI_SRAM_A2_BASE + SUNXI_SRAM_A2_SIZE - 0x200)
+
+#define PLAT_MAX_PWR_LVL_STATES		U(3)
 #define PLAT_MAX_RET_STATE		U(1)
-#define PLAT_MAX_OFF_STATE		U(2)
+#define PLAT_MAX_OFF_STATE		U(3)
 
 #define PLAT_MAX_PWR_LVL		U(2)
 #define PLAT_NUM_PWR_DOMAINS		(1 + \
