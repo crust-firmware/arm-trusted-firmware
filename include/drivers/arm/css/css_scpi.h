@@ -50,6 +50,7 @@ enum {
 	SCP_E_SUPPORT,	/* Feature not supported or disabled */
 	SCPI_E_DEVICE,	/* Device error */
 	SCPI_E_BUSY,	/* Device is busy */
+	SCPI_E_OS,	/* SCP OS error */
 };
 
 typedef uint32_t scpi_status_t;

@@ -65,7 +65,8 @@ static void scpi_secure_message_receive(scpi_cmd_t *cmd)
 	if (mhu_status != (1 << SCPI_MHU_SLOT_ID)) {
 		ERROR("MHU: Unexpected protocol (MHU status: 0x%x)\n",
 			mhu_status);
-		panic();
+		cmd->status = SCPI_E_OS;
+		return;
 	}
 
 	/*
