@@ -10,12 +10,9 @@
 
 #include <arch_helpers.h>
 #include <common/debug.h>
-#include <drivers/delay_timer.h>
 #include <drivers/mentor/mi2cv.h>
-#include <lib/mmio.h>
 
 #include <sunxi_def.h>
-#include <sunxi_mmap.h>
 #include <sunxi_private.h>
 
 #define AXP805_ADDR	0x36
@@ -88,27 +85,4 @@ int sunxi_pmic_setup(uint16_t socid, const void *fdt)
 		pmic = AXP805;
 
 	return 0;
-}
-
-void __dead2 sunxi_power_down(void)
-{
-	uint8_t val;
-
-	switch (pmic) {
-	case AXP805:
-		/* Re-initialise after rich OS might have used it. */
-		sunxi_init_platform_r_twi(SUNXI_SOC_H6, false);
-		/* initialise mi2cv driver */
-		i2c_init((void *)SUNXI_R_I2C_BASE);
-		axp_i2c_read(AXP805_ADDR, 0x32, &val);
-		axp_i2c_write(AXP805_ADDR, 0x32, val | 0x80);
-		break;
-	default:
-		break;
-	}
-
-	udelay(1000);
-	ERROR("PSCI: Cannot communicate with PMIC, halting\n");
-	wfi();
-	panic();
 }
