@@ -39,8 +39,6 @@
 
 #define mpidr_is_valid(mpidr) (plat_core_pos_by_mpidr(mpidr) >= 0)
 
-static bool scpi_available = false;
-
 static void sunxi_cpu_standby(plat_local_state_t cpu_state)
 {
 	unsigned int scr = read_scr_el3();
@@ -57,12 +55,8 @@ static int sunxi_pwr_domain_on(u_register_t mpidr)
 	if (mpidr_is_valid(mpidr) == 0)
 		return PSCI_E_INTERN_FAIL;
 
-	if (scpi_available) {
-		scpi_set_css_power_state(mpidr, scpi_power_on, scpi_power_on,
-		                         scpi_power_on);
-	} else {
-		sunxi_cpu_on(mpidr);
-	}
+	scpi_set_css_power_state(mpidr, scpi_power_on, scpi_power_on,
+				 scpi_power_on);
 
 	return PSCI_E_SUCCESS;
 }
@@ -72,20 +66,10 @@ static void sunxi_pwr_domain_off(const psci_power_state_t *target_state)
 	if (is_local_state_off(CPU_PWR_STATE(target_state)))
 		gicv2_cpuif_disable();
 
-	if (scpi_available) {
-		scpi_set_css_power_state(read_mpidr(),
-		                         CPU_PWR_STATE(target_state),
-		                         CLUSTER_PWR_STATE(target_state),
-		                         SYSTEM_PWR_STATE(target_state));
-	}
-}
-
-static void __dead2 sunxi_pwr_down_wfi(const psci_power_state_t *target_state)
-{
-	sunxi_cpu_off(read_mpidr());
-
-	while (1)
-		wfi();
+	scpi_set_css_power_state(read_mpidr(),
+				 CPU_PWR_STATE(target_state),
+				 CLUSTER_PWR_STATE(target_state),
+				 SYSTEM_PWR_STATE(target_state));
 }
 
 static void sunxi_pwr_domain_on_finish(const psci_power_state_t *target_state)
@@ -102,27 +86,22 @@ static void __dead2 sunxi_system_off(void)
 {
 	gicv2_cpuif_disable();
 
-	if (scpi_available) {
-		/* Send the power down request to the SCP */
-		if (scpi_sys_power_state(scpi_system_shutdown) != SCP_OK)
-			ERROR("PSCI: SCP error\n");
-	}
+	/* Send the power down request to the SCP */
+	if (scpi_sys_power_state(scpi_system_shutdown) != SCP_OK)
+		ERROR("PSCI: SCP error\n");
 
-	/* Turn off all secondary CPUs */
-	sunxi_disable_secondary_cpus(read_mpidr());
-
-	sunxi_power_down();
+	ERROR("PSCI: System off failed\n");
+	wfi();
+	panic();
 }
 
 static void __dead2 sunxi_system_reset(void)
 {
 	gicv2_cpuif_disable();
 
-	if (scpi_available) {
-		/* Send the system reset request to the SCP */
-		if (scpi_sys_power_state(scpi_system_reset) != SCP_OK)
-			ERROR("PSCI: SCP error\n");
-	}
+	/* Send the system reset request to the SCP */
+	if (scpi_sys_power_state(scpi_system_reset) != SCP_OK)
+		ERROR("PSCI: SCP error\n");
 
 	/* Reset the whole system when the watchdog times out */
 	mmio_write_32(SUNXI_WDOG0_CFG_REG, 1);
@@ -213,11 +192,15 @@ static plat_psci_ops_t sunxi_psci_ops = {
 	.cpu_standby			= sunxi_cpu_standby,
 	.pwr_domain_on			= sunxi_pwr_domain_on,
 	.pwr_domain_off			= sunxi_pwr_domain_off,
+	.pwr_domain_suspend		= sunxi_pwr_domain_off,
 	.pwr_domain_on_finish		= sunxi_pwr_domain_on_finish,
+	.pwr_domain_suspend_finish	= sunxi_pwr_domain_on_finish,
 	.system_off			= sunxi_system_off,
 	.system_reset			= sunxi_system_reset,
 	.validate_power_state		= sunxi_validate_power_state,
 	.validate_ns_entrypoint		= sunxi_validate_ns_entrypoint,
+	.get_sys_suspend_power_state	= sunxi_get_sys_suspend_power_state,
+	.get_node_hw_state		= sunxi_get_node_hw_state,
 };
 
 int plat_setup_psci_ops(uintptr_t sec_entrypoint,
@@ -237,27 +220,12 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 	if (mmio_read_32(SUNXI_SRAM_A2_BASE + 0x100) != 0) {
 		/* Take the SCP out of reset. */
 		mmio_setbits_32(SUNXI_R_CPUCFG_BASE, BIT(0));
-		/* Wait for the SCP to boot, or declare SCPI unavailable. */
-		if (scpi_wait_ready() == 0) {
-			scpi_available = true;
-		} else {
+		/* Wait for the SCP to boot. */
+		if (scpi_wait_ready() < 0)
 			ERROR("BL31: SCP firmware is not responding\n");
-		}
 	}
 
-	NOTICE("BL31: Using %s for PSCI ops.\n",
-	       scpi_available ? "SCPI" : "native code");
-	if (scpi_available) {
-		/* Suspend is only available via SCPI. */
-		sunxi_psci_ops.pwr_domain_suspend = sunxi_pwr_domain_off;
-		sunxi_psci_ops.pwr_domain_suspend_finish = sunxi_pwr_domain_on_finish;
-		sunxi_psci_ops.get_sys_suspend_power_state = sunxi_get_sys_suspend_power_state;
-		sunxi_psci_ops.get_node_hw_state = sunxi_get_node_hw_state;
-	} else {
-		/* The default handler works when SCPI is available. */
-		sunxi_psci_ops.pwr_domain_pwr_down_wfi = sunxi_pwr_down_wfi;
-	}
-
+	NOTICE("BL31: Using SCPI for PSCI ops.\n");
 	*psci_ops = &sunxi_psci_ops;
 
 	return 0;
