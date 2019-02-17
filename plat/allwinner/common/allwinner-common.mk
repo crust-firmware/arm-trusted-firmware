@@ -53,9 +53,6 @@ ERRATA_A53_855873		:=	1
 # The reset vector can be changed for each CPU.
 PROGRAMMABLE_RESET_ADDRESS	:=	1
 
-# Allow mapping read-only data as execute-never.
-SEPARATE_CODE_AND_RODATA	:=	1
-
 # BL31 gets loaded alongside BL33 (U-Boot) by U-Boot's SPL
 RESET_TO_BL31			:=	1
 
