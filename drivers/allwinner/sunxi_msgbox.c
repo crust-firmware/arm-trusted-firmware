@@ -36,7 +36,7 @@
 #define MHU_MAX_SLOT_ID		31
 
 #define MHU_TIMEOUT_DELAY	10
-#define MHU_TIMEOUT_ITERS	10000
+#define MHU_TIMEOUT_ITERS	100000
 
 static DEFINE_BAKERY_LOCK(mhu_secure_message_lock);
 
