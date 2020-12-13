@@ -35,8 +35,7 @@
 
 #define MHU_MAX_SLOT_ID		31
 
-#define MHU_TIMEOUT_DELAY	10
-#define MHU_TIMEOUT_ITERS	100000
+#define MHU_TIMEOUT_ITERS	1000000
 
 static DEFINE_BAKERY_LOCK(mhu_secure_message_lock);
 
@@ -61,8 +60,7 @@ void mhu_secure_message_start(unsigned int slot_id __unused)
 	bakery_lock_get(&mhu_secure_message_lock);
 
 	/* Wait for all previous messages to be acknowledged. */
-	while (!sunxi_msgbox_last_tx_done(TX_CHAN) && --timeout)
-		udelay(MHU_TIMEOUT_DELAY);
+	while (!sunxi_msgbox_last_tx_done(TX_CHAN) && --timeout);
 }
 
 void mhu_secure_message_send(unsigned int slot_id)
@@ -76,8 +74,7 @@ uint32_t mhu_secure_message_wait(void)
 	uint32_t msg = 0;
 
 	/* Wait for a message from the SCP. */
-	while (!sunxi_msgbox_peek_data(RX_CHAN) && --timeout)
-		udelay(MHU_TIMEOUT_DELAY);
+	while (!sunxi_msgbox_peek_data(RX_CHAN) && --timeout);
 
 	/* Return the most recent message in the FIFO. */
 	while (sunxi_msgbox_peek_data(RX_CHAN))
