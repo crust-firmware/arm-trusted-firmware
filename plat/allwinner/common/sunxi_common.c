@@ -20,8 +20,6 @@
 
 static const mmap_region_t sunxi_mmap[MAX_STATIC_MMAP_REGIONS + 1] = {
 	MAP_REGION_FLAT(SUNXI_SRAM_BASE, SUNXI_SRAM_SIZE,
-			MT_RW_DATA | MT_SECURE),
-	MAP_REGION_FLAT(SUNXI_SCP_BASE, SUNXI_SCP_SIZE,
 			MT_DEVICE | MT_RW | MT_SECURE | MT_EXECUTE_NEVER),
 	MAP_REGION_FLAT(SUNXI_DEV_BASE, SUNXI_DEV_SIZE,
 			MT_DEVICE | MT_RW | MT_SECURE | MT_EXECUTE_NEVER),
@@ -44,12 +42,24 @@ void sunxi_configure_mmu_el3(int flags)
 	mmap_add_region(BL_CODE_BASE, BL_CODE_BASE,
 			BL_CODE_END - BL_CODE_BASE,
 			MT_CODE | MT_SECURE);
+	mmap_add_region(BL_CODE_END, BL_CODE_END,
+			BL_END - BL_CODE_END,
+			MT_RW_DATA | MT_SECURE);
+#if SEPARATE_CODE_AND_RODATA
 	mmap_add_region(BL_RO_DATA_BASE, BL_RO_DATA_BASE,
 			BL_RO_DATA_END - BL_RO_DATA_BASE,
 			MT_RO_DATA | MT_SECURE);
+#endif
+#if SEPARATE_NOBITS_REGION
+	mmap_add_region(BL_NOBITS_BASE, BL_NOBITS_BASE,
+			BL_NOBITS_END - BL_NOBITS_BASE,
+			MT_RW_DATA | MT_SECURE);
+#endif
+#if USE_COHERENT_MEM
 	mmap_add_region(BL_COHERENT_RAM_BASE, BL_COHERENT_RAM_BASE,
 			BL_COHERENT_RAM_END - BL_COHERENT_RAM_BASE,
 			MT_DEVICE | MT_RW | MT_SECURE | MT_EXECUTE_NEVER);
+#endif
 
 	mmap_add(sunxi_mmap);
 	init_xlat_tables();
@@ -187,7 +197,6 @@ void sunxi_execute_arisc_code(uint32_t *code, size_t size, uint16_t param)
 	 * in instruction granularity (32 bits).
 	 */
 	mmio_write_32(arisc_reset_vec, ((uintptr_t)code - arisc_reset_vec) / 4);
-	clean_dcache_range(arisc_reset_vec, 4);
 
 	/* De-assert the arisc reset line to let it run. */
 	mmio_setbits_32(SUNXI_R_CPUCFG_BASE, BIT(0));
