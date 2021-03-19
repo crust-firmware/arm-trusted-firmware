@@ -15,10 +15,13 @@
 #include <lib/utils_def.h>
 #include <plat/common/platform.h>
 
-#include <core_off_arisc.h>
 #include <sunxi_cpucfg.h>
 #include <sunxi_mmap.h>
 #include <sunxi_private.h>
+
+#ifndef SUNXI_CPUIDLE_EN_REG
+#include <core_off_arisc.h>
+#endif
 
 static void sunxi_cpu_disable_power(unsigned int cluster, unsigned int core)
 {
@@ -72,6 +75,10 @@ void sunxi_cpu_power_off_self(void)
 	/* Simplifies assembly, all SoCs so far are single cluster anyway. */
 	assert(MPIDR_AFFLVL1_VAL(mpidr) == 0);
 
+#ifdef SUNXI_CPUIDLE_EN_REG
+	/* Trigger power off for this core. */
+	mmio_write_32(SUNXI_CORE_CLOSE_REG, BIT_32(core));
+#else
 	/*
 	 * If we are supposed to turn ourself off, tell the arisc SCP
 	 * to do that work for us. The code expects the core mask to be
@@ -79,6 +86,7 @@ void sunxi_cpu_power_off_self(void)
 	 */
 	sunxi_execute_arisc_code(arisc_core_off, sizeof(arisc_core_off),
 				 BIT_32(core));
+#endif
 }
 
 void sunxi_cpu_on(u_register_t mpidr)
@@ -104,6 +112,15 @@ void sunxi_cpu_on(u_register_t mpidr)
 	mmio_setbits_32(SUNXI_CPUCFG_RST_CTRL_REG(cluster), BIT(core));
 	/* Assert DBGPWRDUP */
 	mmio_setbits_32(SUNXI_CPUCFG_DBG_REG0, BIT(core));
+}
+
+void sunxi_cpu_ops_init(void)
+{
+#ifdef SUNXI_CPUIDLE_EN_REG
+	/* Enable the CPUIDLE hardware (only needs to be done once). */
+	mmio_write_32(SUNXI_CPUIDLE_EN_REG, 0x16aa0000);
+	mmio_write_32(SUNXI_CPUIDLE_EN_REG, 0xaa160001);
+#endif
 }
 
 void sunxi_cpu_power_off_others(void)

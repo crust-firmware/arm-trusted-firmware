@@ -78,4 +78,6 @@ static const plat_psci_ops_t sunxi_native_psci_ops = {
 void sunxi_set_native_psci_ops(const plat_psci_ops_t **psci_ops)
 {
 	*psci_ops = &sunxi_native_psci_ops;
+
+	sunxi_cpu_ops_init();
 }
