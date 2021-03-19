@@ -49,10 +49,8 @@ static const gicv2_driver_data_t sunxi_gic_data = {
  */
 static void *sunxi_find_dtb(void)
 {
-	uint64_t *u_boot_base;
+	uint64_t *u_boot_base = (uint64_t *)SUNXI_DRAM_VIRT_BASE;
 	int i;
-
-	u_boot_base = (void *)(SUNXI_DRAM_VIRT_BASE + SUNXI_DRAM_SEC_SIZE);
 
 	for (i = 0; i < 2048 / sizeof(uint64_t); i++) {
 		uint32_t *dtb_base;
