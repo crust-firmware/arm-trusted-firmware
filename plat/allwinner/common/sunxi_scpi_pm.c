@@ -87,6 +87,8 @@ static void sunxi_pwr_domain_off(const psci_power_state_t *target_state)
 static void sunxi_pwr_domain_on_finish(const psci_power_state_t *target_state)
 {
 	if (is_local_state_off(SYSTEM_PWR_STATE(target_state))) {
+		INFO("TF-A resuming on CPU %llu\n",
+		     read_mpidr() & MPIDR_AFFLVL_MASK);
 		gicv2_distif_init();
 	}
 	if (is_local_state_off(CPU_PWR_STATE(target_state))) {
