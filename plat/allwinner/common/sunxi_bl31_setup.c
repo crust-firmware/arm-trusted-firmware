@@ -111,6 +111,7 @@ void bl31_plat_arch_setup(void)
 
 void bl31_platform_setup(void)
 {
+	uint32_t exception, step;
 	const char *soc_name;
 	uint16_t soc_id = sunxi_read_soc_id();
 	void *fdt;
@@ -147,6 +148,13 @@ void bl31_platform_setup(void)
 	} else {
 		NOTICE("BL31: No DTB found.\n");
 	}
+
+	exception = mmio_read_32(SUNXI_RTC_BASE + 0x108);
+	if (exception)
+		NOTICE("BL31: Last SCP exception was 0x%08x\n", exception);
+	step = mmio_read_32(SUNXI_RTC_BASE + 0x10c);
+	if (step)
+		NOTICE("BL31: Last SCP step was 0x%04x\n", step);
 
 	/* Configure the interrupt controller */
 	gicv2_driver_init(&sunxi_gic_data);
